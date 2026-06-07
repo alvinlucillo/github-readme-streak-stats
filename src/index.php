@@ -8,6 +8,7 @@ require_once "stats.php";
 require_once "card.php";
 require_once "cache.php";
 require_once "generator.php";
+require_once "request.php";
 
 // load .env
 $dotenv = \Dotenv\Dotenv::createImmutable(dirname(__DIR__, 1));
@@ -21,20 +22,28 @@ if (!isset($_SERVER["TOKEN"])) {
     renderOutput($message, 500);
 }
 
-// set cache to refresh once per day (24 hours)
-$cacheSeconds = CACHE_DURATION;
-header("Expires: " . gmdate("D, d M Y H:i:s", time() + $cacheSeconds) . " GMT");
-header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-header("Cache-Control: public, max-age=$cacheSeconds");
+$cacheDisabled = isStreakCacheDisabled($_SERVER);
+if ($cacheDisabled) {
+    header("Cache-Control: no-store, max-age=0");
+    header("Expires: 0");
+} else {
+    // set cache to refresh once per day (24 hours)
+    $cacheSeconds = CACHE_DURATION;
+    header("Expires: " . gmdate("D, d M Y H:i:s", time() + $cacheSeconds) . " GMT");
+    header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+    header("Cache-Control: public, max-age=$cacheSeconds");
+}
 
-// redirect to demo site if user is not given
-if (!isset($_REQUEST["user"])) {
+$user = resolveStreakUser($_REQUEST, $_SERVER);
+
+// redirect to demo site if neither STREAK_USER nor a request user is given
+if ($user === null) {
     header("Location: demo/");
     exit();
 }
 
 try {
-    $stats = generateStreakStats($_REQUEST["user"], $_REQUEST);
+    $stats = generateStreakStats($user, $_REQUEST);
     renderOutput($stats);
 } catch (InvalidArgumentException | AssertionError $error) {
     error_log("Error {$error->getCode()}: {$error->getMessage()}");
