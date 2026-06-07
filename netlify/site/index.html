@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>GitHub Readme Streak Stats</title>
+        <style>
+            :root {
+                color-scheme: light dark;
+                font-family: system-ui, sans-serif;
+            }
+
+            body {
+                display: grid;
+                min-height: 100vh;
+                margin: 0;
+                place-items: center;
+            }
+
+            main {
+                width: min(94vw, 860px);
+                text-align: center;
+            }
+
+            img {
+                max-width: 100%;
+            }
+
+            code {
+                display: block;
+                padding: 1rem;
+                overflow-wrap: anywhere;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>GitHub Readme Streak Stats</h1>
+            <p>This card is generated during each Netlify deploy.</p>
+            <img src="/streak.svg" alt="GitHub streak stats" />
+            <p>Paste this Markdown into your GitHub profile README:</p>
+            <code id="markdown"></code>
+        </main>
+        <script>
+            const cardUrl = `${window.location.origin}/streak.svg`;
+            document.querySelector("#markdown").textContent = `![GitHub Streak](${cardUrl})`;
+        </script>
+    </body>
+</html>
