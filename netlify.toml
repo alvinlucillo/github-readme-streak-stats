@@ -1,0 +1,19 @@
+[build]
+  command = "bash scripts/build-netlify.sh"
+  publish = "dist"
+
+[build.environment]
+  PHP_VERSION = "8.3"
+
+[functions]
+  directory = "netlify/functions"
+
+[[headers]]
+  for = "/streak.svg"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Cache-Control = "public, max-age=3600"
+    Content-Security-Policy = "default-src 'none'; style-src 'unsafe-inline'; img-src data:"
+    Content-Type = "image/svg+xml; charset=utf-8"
+    Referrer-Policy = "no-referrer-when-downgrade"
+    X-Content-Type-Options = "nosniff"
