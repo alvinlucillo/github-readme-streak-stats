@@ -31,6 +31,8 @@ RUN a2enmod rewrite headers && \
     ServerSignature Off\n\
     PassEnv TOKEN\n\
     PassEnv WHITELIST\n\
+    PassEnv STREAK_USER\n\
+    PassEnv DISABLE_CACHE\n\
     <VirtualHost *:80>\n\
     ServerAdmin webmaster@localhost\n\
     DocumentRoot /var/www/html/src\n\
