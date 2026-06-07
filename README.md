@@ -233,8 +233,8 @@ The Inkscape dependency is required for PNG rendering, as well as Segoe UI font 
 
 Netlify does not run PHP for incoming requests, so this repository cannot expose its dynamic `?user=...` PHP endpoint there. Netlify can still host a card for your own profile by running the existing PHP generator at build time and publishing the resulting SVG to its CDN. The included scheduled function can trigger a new deploy once per day.
 
-> [!IMPORTANT]
-> This Netlify deployment publishes one preconfigured card at `/streak.svg`; it cannot query GitHub or apply `?theme=...` when the image is requested. If you need fresh request-time data and URL options, deploy the PHP application on Vercel, Heroku, Docker, or another PHP/container runtime as described in [Dynamic fixed-user mode](#dynamic-fixed-user-mode).
+> [!NOTE]
+> This deployment publishes one preconfigured card at `/streak.svg`. Change its options with environment variables and redeploy. If you need a dynamic endpoint that accepts options in every request, use the Vercel, Heroku, Docker, or other PHP-server instructions instead.
 
 <details>
   <summary><b>Instructions for deploying a fork to Netlify</b></summary>
@@ -277,30 +277,6 @@ Netlify does not run PHP for incoming requests, so this repository cannot expose
 
 The token remains server-side: it is used only by the Netlify build and is never written into `dist` or sent to the browser. Deploy Previews also run the build, so limit `TOKEN` to the production deploy context if you do not want previews to use it.
 
-#### Token expiration and card refreshes
-
-Visitors to your site and GitHub profile load the already-generated `/streak.svg` from Netlify's CDN. Those page views do not use `TOKEN` and do not query GitHub. The token is used only when Netlify runs `scripts/build-netlify.sh` during a deploy.
-
-The token does not need to have no expiration. GitHub recommends giving personal access tokens an expiration date. If it expires, the currently published SVG remains available, but the next manual or scheduled deploy will fail to refresh it. Before expiration, create a replacement token, update `TOKEN` in Netlify, and trigger a new deploy. Use the minimum permissions required and treat the token like a password.
-
-#### Applying a theme
-
-This Netlify deployment is static, so query parameters on the public URL are ignored. For example, opening `https://YOUR-SITE.netlify.app/?theme=tokyonight` still displays the SVG generated during the last deploy.
-
-To use Tokyo Night, set the Netlify build environment variable to:
-
-```text
-STREAK_OPTIONS=theme=tokyonight
-```
-
-Then trigger a new production deploy. Continue using the stable image URL in your profile:
-
-```md
-![GitHub Streak](https://YOUR-SITE.netlify.app/streak.svg)
-```
-
-To combine settings, separate them with `&`, for example `theme=tokyonight&hide_border=true`. Do not put a leading `?` or `user=...` in `STREAK_OPTIONS`. Changing the theme requires another deploy because Netlify serves a prebuilt SVG rather than executing PHP for each request.
-
 #### Troubleshooting `expo: command not found`
 
 This repository does not use Expo. If the deploy log contains the following values, Netlify is overriding `netlify.toml` with a build command saved in the project UI:
@@ -322,27 +298,6 @@ Fix the project settings rather than adding `expo` or `expo-cli`:
 In the next deploy log, the resolved build command should be `bash scripts/build-netlify.sh`, not `expo export -p web`.
 
 </details>
-
-### Dynamic fixed-user mode
-
-For an endpoint that is locked to your account but accepts display options on every request, deploy the PHP application on a request-time PHP or Docker host and set:
-
-```text
-TOKEN=your_github_token
-STREAK_USER=alvinlucillo
-DISABLE_CACHE=true
-```
-
-`STREAK_USER` overrides any `user` query parameter, while options such as `theme` remain request-controlled. For example, both URLs below render `alvinlucillo`, but with different themes:
-
-```text
-https://YOUR-DYNAMIC-HOST.example/?theme=tokyonight
-https://YOUR-DYNAMIC-HOST.example/?theme=dark&hide_border=true
-```
-
-`DISABLE_CACHE=true` disables both the file-based contribution cache and public HTTP caching, so each image request queries GitHub. This provides the freshest result but consumes GitHub API quota on every profile view; leaving caching enabled is strongly recommended for a public profile. A short cache is generally safer than querying GitHub for every visitor.
-
-Netlify cannot provide this mode for the current codebase because its request-time Functions do not execute PHP. The Netlify configuration in this repository remains a build-time static option only. Use the Docker instructions below or another PHP-compatible deployment if request-time generation is required.
 
 ### Deploy to Vercel
 
